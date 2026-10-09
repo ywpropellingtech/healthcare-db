@@ -1,0 +1,104 @@
+version: 2
+
+sources:
+  - name: raw_workday
+    database: RAW
+    schema: WORKDAY
+    description: Workday HR system source data
+    tables:
+      - name: WRK_EMPLOYEES
+        description: Employee master data from Workday
+        columns:
+          - name: EMPLOYEE_ID
+            description: Unique employee identifier
+            data_tests:
+              - not_null
+              - unique
+          - name: FIRST_NAME
+            description: Employee first name
+          - name: LAST_NAME
+            description: Employee last name
+          - name: NPI
+            description: National Provider Identifier
+            data_tests:
+              - unique
+          - name: DEPARTMENT_ID
+            description: Foreign key to department
+          - name: DEPARTMENT_NAME
+            description: Department name
+          - name: JOB_TITLE
+            description: Job title/position
+          - name: HIRE_DATE
+            description: Employment hire date
+          - name: TERMINATION_DATE
+            description: Employment termination date (null if active)
+          - name: STATUS
+            description: Employment status (ACTIVE, INACTIVE, TERMINATED)
+          - name: EMAIL
+            description: Employee email address
+          - name: PHONE
+            description: Employee phone number
+          - name: CREATED_AT
+            description: Record creation timestamp
+          - name: UPDATED_AT
+            description: Record update timestamp
+
+  - name: raw_epic
+    database: RAW
+    schema: EPIC
+    description: Epic EHR system source data
+    tables:
+      - name: EPC_ENCOUNTERS
+        description: Patient encounter records from Epic
+        columns:
+          - name: ENCOUNTER_ID
+            description: Unique encounter identifier
+            data_tests:
+              - not_null
+              - unique
+          - name: PATIENT_ID
+            description: Unique patient identifier
+            data_tests:
+              - not_null
+          - name: PROVIDER_NPI
+            description: Provider NPI from encounter
+            data_tests:
+              - not_null
+          - name: ENCOUNTER_DATE
+            description: Date of encounter
+            data_tests:
+              - not_null
+          - name: ENCOUNTER_TIME
+            description: Time of encounter
+          - name: ENCOUNTER_TYPE
+            description: Type of encounter (OFFICE, TELEHEALTH, ED, INPATIENT, etc.)
+            data_tests:
+              - not_null
+              - accepted_values:
+                  values: ['OFFICE', 'TELEHEALTH', 'ED', 'INPATIENT', 'OUTPATIENT', 'OTHER']
+          - name: DEPARTMENT_ID
+            description: Department where encounter occurred
+            data_tests:
+              - not_null
+          - name: CHIEF_COMPLAINT
+            description: Chief complaint/reason for visit
+          - name: DIAGNOSIS_CODE
+            description: ICD-10 diagnosis code
+          - name: PROCEDURE_CODE
+            description: CPT procedure code
+          - name: DISCHARGE_DISPOSITION
+            description: How patient was discharged
+          - name: VISIT_DURATION_MINUTES
+            description: Duration of visit in minutes
+          - name: CHARGE_AMOUNT
+            description: Total charge amount
+          - name: REVENUE_AMOUNT
+            description: Recognized revenue amount
+          - name: CREATED_AT
+            description: Record creation timestamp
+            data_tests:
+              - not_null
+          - name: UPDATED_AT
+            description: Record update timestamp
+            data_tests:
+              - not_null

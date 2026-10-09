@@ -1,0 +1,121 @@
+version: 2
+
+models:
+  - name: stg_employees
+    description: Cleaned and standardized employee data from Workday
+    columns:
+      - name: employee_key
+        description: Surrogate key for employee records
+        data_tests:
+          - unique
+          - not_null
+      - name: employee_id
+        description: Unique employee identifier from source
+        data_tests:
+          - not_null
+      - name: first_name
+        description: Employee first name
+        data_tests:
+          - not_null
+      - name: last_name
+        description: Employee last name
+        data_tests:
+          - not_null
+      - name: npi
+        description: National Provider Identifier
+        data_tests:
+          - not_null
+          - unique
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: '^\d{10}$'
+      - name: department_id
+        description: Department identifier
+        data_tests:
+          - not_null
+      - name: employment_status
+        description: Employee employment status
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ['ACTIVE', 'INACTIVE', 'TERMINATED', 'UNKNOWN']
+      - name: hire_date
+        description: Employee hire date
+        data_tests:
+          - not_null
+      - name: termination_date
+        description: Employee termination date
+      - name: email
+        description: Employee email address
+        data_tests:
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}$'
+      - name: created_at
+        description: Record creation timestamp
+        data_tests:
+          - not_null
+      - name: updated_at
+        description: Record update timestamp
+        data_tests:
+          - not_null
+
+  - name: stg_encounters
+    description: Cleaned and standardized encounter data from Epic
+    columns:
+      - name: encounter_key
+        description: Surrogate key for encounter records
+        data_tests:
+          - unique
+          - not_null
+      - name: encounter_id
+        description: Unique encounter identifier
+        data_tests:
+          - not_null
+          - unique
+      - name: patient_id
+        description: Unique patient identifier
+        data_tests:
+          - not_null
+      - name: provider_npi
+        description: Provider National Provider Identifier
+        data_tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: '^\d{10}$'
+      - name: encounter_date
+        description: Encounter date
+        data_tests:
+          - not_null
+      - name: encounter_datetime
+        description: Encounter date and time
+        data_tests:
+          - not_null
+      - name: encounter_type
+        description: Type of encounter
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ['OFFICE', 'TELEHEALTH', 'ED', 'INPATIENT', 'OUTPATIENT', 'OTHER']
+      - name: department_id
+        description: Department where encounter occurred
+        data_tests:
+          - not_null
+      - name: charge_amount
+        description: Total charge amount
+        data_tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: revenue_amount
+        description: Recognized revenue amount
+        data_tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: visit_duration_minutes
+        description: Encounter duration in minutes
+      - name: created_at
+        description: Record creation timestamp
+        data_tests:
+          - not_null
+      - name: updated_at
+        description: Record update timestamp
+        data_tests:
+          - not_null

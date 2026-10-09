@@ -1,0 +1,93 @@
+version: 2
+
+models:
+  - name: int_employee_encounters
+    description: Enriched employee-encounter join data with employee context
+    columns:
+      - name: encounter_key
+        description: Unique encounter identifier (surrogate key)
+        data_tests:
+          - not_null
+      - name: encounter_id
+        description: Source encounter ID
+        data_tests:
+          - not_null
+      - name: patient_id
+        description: Patient identifier
+        data_tests:
+          - not_null
+      - name: employee_key
+        description: Employee surrogate key
+      - name: employee_id
+        description: Employee identifier
+      - name: provider_npi
+        description: Provider National Provider Identifier
+        data_tests:
+          - not_null
+      - name: employment_status
+        description: Provider employment status
+      - name: encounter_date
+        description: Date of encounter
+        data_tests:
+          - not_null
+      - name: encounter_type
+        description: Type of encounter
+        data_tests:
+          - not_null
+      - name: charge_amount
+        description: Total charges
+        data_tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: revenue_amount
+        description: Recognized revenue
+        data_tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+  - name: int_provider_metrics
+    description: Daily aggregated provider performance metrics
+    columns:
+      - name: provider_metric_key
+        description: Unique provider metric identifier
+        data_tests:
+          - not_null
+      - name: metric_date
+        description: Date for which metrics are calculated
+        data_tests:
+          - not_null
+      - name: employee_id
+        description: Provider/employee identifier
+        data_tests:
+          - not_null
+      - name: provider_npi
+        description: Provider National Provider Identifier
+        data_tests:
+          - not_null
+      - name: total_encounters
+        description: Total encounters for provider on date
+        data_tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: unique_patients
+        description: Count of unique patients seen
+        data_tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: total_revenue
+        description: Total revenue for provider on date
+        data_tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: avg_revenue_per_encounter
+        description: Average revenue per encounter
+        data_tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: avg_visit_duration_minutes
+        description: Average visit duration in minutes
+      - name: encounters_with_charges
+        description: Count of encounters with charges > 0
+      - name: encounters_with_revenue
+        description: Count of encounters with revenue > 0

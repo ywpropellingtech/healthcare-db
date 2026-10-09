@@ -1,0 +1,45 @@
+# dbt artifacts
+target/
+dbt_packages/
+logs/
+.dbt/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+ENV/
+env/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Credentials and sensitive files
+profiles.yml
+.env
+.env.local
+*.pem
+*.p8
+*.p12
+*.pfx
+*.key
+rsa_key.p8
+credentials.json
+
+# Project specific
+*.csv
+*.xlsx
+*.xls
+
+# Logs
+*.log
+*.logs

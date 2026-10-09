@@ -1,0 +1,113 @@
+name: dbt Run and Test
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  dbt-run-test:
+    runs-on: ubuntu-latest
+
+    env:
+      DBT_PROFILES_DIR: ${{ github.workspace }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dbt and dependencies
+        run: |
+          pip install --upgrade pip
+          pip install dbt-snowflake dbt-utils dbt-expectations
+
+      - name: Create profiles.yml
+        env:
+          SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+          SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
+          SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
+          SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
+          SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE }}
+        run: |
+          mkdir -p ~/.dbt
+          cat > ~/.dbt/profiles.yml <<EOF
+          healthcare_analytics:
+            outputs:
+              ci:
+                type: snowflake
+                account: $SNOWFLAKE_ACCOUNT
+                user: $SNOWFLAKE_USER
+                password: $SNOWFLAKE_PASSWORD
+                role: $SNOWFLAKE_ROLE
+                warehouse: $SNOWFLAKE_WAREHOUSE
+                database: $SNOWFLAKE_DATABASE
+                schema: analytics
+                threads: 4
+                client_session_keep_alive: False
+            target: ci
+          EOF
+
+      - name: dbt Parse
+        run: dbt parse
+        continue-on-error: true
+
+      - name: dbt Debug
+        run: dbt debug
+
+      - name: dbt Deps
+        run: dbt deps
+
+      - name: dbt Seed
+        run: dbt seed --profiles-dir ~/.dbt
+        continue-on-error: true
+
+      - name: dbt Run
+        run: dbt run --profiles-dir ~/.dbt
+
+      - name: dbt Test
+        run: dbt test --profiles-dir ~/.dbt
+
+      - name: Generate dbt docs
+        run: dbt docs generate --profiles-dir ~/.dbt
+        continue-on-error: true
+
+      - name: Upload dbt Results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: dbt-results
+          path: |
+            target/
+            logs/
+
+      - name: Comment PR with dbt results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const manifest = JSON.parse(fs.readFileSync('target/manifest.json', 'utf8'));
+            const nodes = manifest.nodes;
+
+            const models = Object.values(nodes).filter(n => n.resource_type === 'model');
+            const tests = Object.values(nodes).filter(n => n.resource_type === 'test');
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## dbt Build Report\n\n- Models: ${models.length}\n- Tests: ${tests.length}\n\n✅ dbt run and tests completed successfully!`
+            });
+        continue-on-error: true
