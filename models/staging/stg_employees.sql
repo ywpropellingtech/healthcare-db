@@ -151,7 +151,29 @@ cleaned_data as (
 
 -- Deduplicate to keep most recent record per employee
 deduplicated as (
-  select * except (recency_rank)
+  select
+    employee_id,
+    full_name,
+    first_name,
+    last_name,
+    npi,
+    npi_invalid_flag,
+    department_id,
+    department_name,
+    job_title,
+    worker_type,
+    fte,
+    annual_salary,
+    salary_missing_flag,
+    hire_date,
+    termination_date,
+    employment_status,
+    email,
+    phone,
+    last_updated,
+    created_at,
+    updated_at,
+    dbt_loaded_at
   from cleaned_data
   where recency_rank = 1
 ),
