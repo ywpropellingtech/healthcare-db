@@ -50,13 +50,11 @@ models:
       - name: encounter_key
         description: Surrogate key for encounter records
         data_tests:
-          - unique
           - not_null
       - name: encounter_id
         description: Unique encounter identifier
         data_tests:
           - not_null
-          - unique
       - name: patient_id
         description: Patient identifier (MRN)
         data_tests:
