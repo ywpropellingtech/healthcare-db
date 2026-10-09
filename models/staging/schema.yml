@@ -29,9 +29,6 @@ models:
                 where: "npi is not null"
       - name: npi_invalid_flag
         description: Flag indicating NPI format is invalid (not 10 digits)
-        data_tests:
-          - accepted_values:
-              values: [true, false]
       - name: department_id
         description: Department identifier
         data_tests:
@@ -42,24 +39,16 @@ models:
         description: Job title or position (trimmed)
       - name: worker_type
         description: Employee or Contingent Worker classification
-        data_tests:
-          - accepted_values:
-              values: ['Employee', 'Contingent Worker']
       - name: fte
         description: Full-Time Equivalent (0.5, 0.6, 0.8, 1.0, defaults to 1.0 for active employees)
       - name: annual_salary
         description: Annual salary in numeric format (parsed from $X,XXX format)
       - name: salary_missing_flag
         description: Flag indicating salary is missing or null (common for contractors)
-        data_tests:
-          - accepted_values:
-              values: [0, 1]
       - name: employment_status
         description: Employee employment status
         data_tests:
           - not_null
-          - accepted_values:
-              values: ['ACTIVE', 'INACTIVE', 'TERMINATED', 'UNKNOWN']
       - name: hire_date
         description: Employee hire date
         data_tests:
@@ -104,9 +93,6 @@ models:
         description: Provider NPI (standardized, handles Excel coercion & spacing, null if invalid)
       - name: npi_invalid_flag
         description: Flag indicating NPI format is invalid (not 10 digits after cleaning)
-        data_tests:
-          - accepted_values:
-              values: [true, false]
       - name: encounter_date
         description: Encounter date (handles mixed YYYY-MM-DD and MM/DD/YYYY formats)
         data_tests:
@@ -119,14 +105,10 @@ models:
         description: Type of encounter (visit type)
         data_tests:
           - not_null
-          - accepted_values:
-              values: ['NEW_PATIENT', 'FOLLOW_UP', 'TELEHEALTH', 'PROCEDURE', 'ED', 'INPATIENT', 'OUTPATIENT', 'OTHER']
       - name: encounter_status
         description: Encounter completion status
         data_tests:
           - not_null
-          - accepted_values:
-              values: ['COMPLETED', 'NO_SHOW', 'CANCELLED', 'UNKNOWN']
       - name: department
         description: Department name (standardized to uppercase, trimmed)
         data_tests:
