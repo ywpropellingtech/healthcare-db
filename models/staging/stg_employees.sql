@@ -41,12 +41,8 @@ cleaned_data as (
     trim(WORKER_TYPE) as worker_type,
     trim(DEPARTMENT) as department,
     trim(COST_CENTER) as cost_center,
-    try_to_number(FTE) as fte,
-    case
-      when ANNUAL_SALARY is null or trim(ANNUAL_SALARY) = '' then null
-      when try_to_number(ANNUAL_SALARY) is not null then try_to_number(ANNUAL_SALARY)
-      else try_to_number(replace(replace(ANNUAL_SALARY, '$', ''), ',', ''))
-    end as annual_salary,
+    FTE as fte,
+    ANNUAL_SALARY as annual_salary,
     try_to_date(HIRE_DATE) as hire_date,
     try_to_date(TERMINATION_DATE) as termination_date,
     trim(LOCATION) as location,
