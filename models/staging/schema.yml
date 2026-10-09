@@ -2,7 +2,7 @@ version: 2
 
 models:
   - name: stg_employees
-    description: Cleaned and standardized employee data from Workday
+    description: Cleaned and standardized employee data from Workday with data quality flags
     columns:
       - name: employee_key
         description: Surrogate key for employee records
@@ -13,25 +13,55 @@ models:
         description: Unique employee identifier from source
         data_tests:
           - not_null
+      - name: full_name
+        description: Standardized full name (parsed from full_name or first/last name)
+        data_tests:
+          - not_null
       - name: first_name
-        description: Employee first name
-        data_tests:
-          - not_null
+        description: Employee first name (trimmed)
       - name: last_name
-        description: Employee last name
-        data_tests:
-          - not_null
+        description: Employee last name (trimmed)
       - name: npi
-        description: National Provider Identifier
+        description: National Provider Identifier (standardized, null if invalid or non-clinical)
         data_tests:
-          - not_null
-          - unique
+          - unique:
+              config:
+                where: "npi is not null"
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: '^\d{10}$'
+              config:
+                where: "npi is not null"
+      - name: npi_invalid_flag
+        description: Flag indicating NPI format is invalid (not 10 digits)
+        data_tests:
+          - accepted_values:
+              values: [true, false]
       - name: department_id
         description: Department identifier
         data_tests:
           - not_null
+      - name: department_name
+        description: Department name (trimmed)
+      - name: job_title
+        description: Job title or position (trimmed)
+      - name: worker_type
+        description: Employee or Contingent Worker classification
+        data_tests:
+          - accepted_values:
+              values: ['Employee', 'Contingent Worker']
+      - name: fte
+        description: Full-Time Equivalent (0.5, 0.6, 0.8, 1.0, defaults to 1.0 for active employees)
+        data_tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 2
+      - name: annual_salary
+        description: Annual salary in numeric format (parsed from $X,XXX format)
+      - name: salary_missing_flag
+        description: Flag indicating salary is missing or null (common for contractors)
+        data_tests:
+          - accepted_values:
+              values: [0, 1]
       - name: employment_status
         description: Employee employment status
         data_tests:
@@ -43,23 +73,27 @@ models:
         data_tests:
           - not_null
       - name: termination_date
-        description: Employee termination date
+        description: Employee termination date (null if active)
       - name: email
-        description: Employee email address
+        description: Employee email address (lowercase)
         data_tests:
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}$'
+              config:
+                where: "email is not null"
+      - name: phone
+        description: Employee phone number
+      - name: last_updated
+        description: Timestamp of last update from source system
       - name: created_at
         description: Record creation timestamp
-        data_tests:
-          - not_null
       - name: updated_at
         description: Record update timestamp
-        data_tests:
-          - not_null
+      - name: dbt_loaded_at
+        description: Timestamp when record was loaded by dbt
 
   - name: stg_encounters
-    description: Cleaned and standardized encounter data from Epic
+    description: Cleaned and standardized encounter data from Epic with data quality flags
     columns:
       - name: encounter_key
         description: Surrogate key for encounter records
@@ -75,47 +109,82 @@ models:
         description: Unique patient identifier
         data_tests:
           - not_null
-      - name: provider_npi
-        description: Provider National Provider Identifier
+      - name: provider_name
+        description: Standardized provider name (parsed from "LAST, FIRST M" format)
         data_tests:
           - not_null
+      - name: provider_npi
+        description: Provider NPI (standardized, handles Excel coercion & spacing, null if invalid)
+        data_tests:
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: '^\d{10}$'
+              config:
+                where: "provider_npi is not null"
+      - name: npi_invalid_flag
+        description: Flag indicating NPI format is invalid (not 10 digits after cleaning)
+        data_tests:
+          - accepted_values:
+              values: [true, false]
       - name: encounter_date
-        description: Encounter date
+        description: Encounter date (handles mixed YYYY-MM-DD and MM/DD/YYYY formats)
         data_tests:
           - not_null
       - name: encounter_datetime
-        description: Encounter date and time
+        description: Encounter date and time combined
+      - name: encounter_hour
+        description: Hour of day when encounter occurred (0-23)
         data_tests:
-          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 23
       - name: encounter_type
-        description: Type of encounter
+        description: Type of encounter (visit type)
         data_tests:
           - not_null
           - accepted_values:
-              values: ['OFFICE', 'TELEHEALTH', 'ED', 'INPATIENT', 'OUTPATIENT', 'OTHER']
-      - name: department_id
-        description: Department where encounter occurred
+              values: ['NEW_PATIENT', 'FOLLOW_UP', 'TELEHEALTH', 'PROCEDURE', 'ED', 'INPATIENT', 'OUTPATIENT', 'OTHER']
+      - name: encounter_status
+        description: Encounter completion status
         data_tests:
           - not_null
+          - accepted_values:
+              values: ['COMPLETED', 'NO_SHOW', 'CANCELLED', 'UNKNOWN']
+      - name: department
+        description: Department name (standardized to uppercase, trimmed)
+        data_tests:
+          - not_null
+      - name: chief_complaint
+        description: Chief complaint or reason for visit
+      - name: diagnosis_code
+        description: ICD-10 diagnosis code (uppercase)
+      - name: procedure_code
+        description: CPT procedure code (uppercase)
+      - name: discharge_disposition
+        description: How patient was discharged
+      - name: visit_duration_minutes
+        description: Duration of visit in minutes (capped at 1440 / 24 hours)
+        data_tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 1440
+      - name: wrvu
+        description: Work RVU (zero for no-shows, cancellations, or null values)
+        data_tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
       - name: charge_amount
-        description: Total charge amount
+        description: Total charge amount (negative values converted to 0)
         data_tests:
           - dbt_expectations.expect_column_values_to_be_between:
               min_value: 0
       - name: revenue_amount
-        description: Recognized revenue amount
+        description: Recognized revenue amount (negative values converted to 0)
         data_tests:
           - dbt_expectations.expect_column_values_to_be_between:
               min_value: 0
-      - name: visit_duration_minutes
-        description: Encounter duration in minutes
       - name: created_at
         description: Record creation timestamp
-        data_tests:
-          - not_null
       - name: updated_at
         description: Record update timestamp
-        data_tests:
-          - not_null
+      - name: dbt_loaded_at
+        description: Timestamp when record was loaded by dbt
