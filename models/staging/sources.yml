@@ -74,8 +74,6 @@ sources:
             description: Type of encounter (OFFICE, TELEHEALTH, ED, INPATIENT, etc.)
             data_tests:
               - not_null
-              - accepted_values:
-                  values: ['OFFICE', 'TELEHEALTH', 'ED', 'INPATIENT', 'OUTPATIENT', 'OTHER']
           - name: DEPARTMENT_ID
             description: Department where encounter occurred
             data_tests:
