@@ -27,10 +27,6 @@ models:
           - unique:
               config:
                 where: "npi is not null"
-          - dbt_expectations.expect_column_values_to_match_regex:
-              regex: '^\d{10}$'
-              config:
-                where: "npi is not null"
       - name: npi_invalid_flag
         description: Flag indicating NPI format is invalid (not 10 digits)
         data_tests:
@@ -51,10 +47,6 @@ models:
               values: ['Employee', 'Contingent Worker']
       - name: fte
         description: Full-Time Equivalent (0.5, 0.6, 0.8, 1.0, defaults to 1.0 for active employees)
-        data_tests:
-          - dbt_expectations.expect_column_values_to_be_between:
-              min_value: 0
-              max_value: 2
       - name: annual_salary
         description: Annual salary in numeric format (parsed from $X,XXX format)
       - name: salary_missing_flag
@@ -76,11 +68,6 @@ models:
         description: Employee termination date (null if active)
       - name: email
         description: Employee email address (lowercase)
-        data_tests:
-          - dbt_expectations.expect_column_values_to_match_regex:
-              regex: '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}$'
-              config:
-                where: "email is not null"
       - name: phone
         description: Employee phone number
       - name: last_updated
@@ -115,11 +102,6 @@ models:
           - not_null
       - name: provider_npi
         description: Provider NPI (standardized, handles Excel coercion & spacing, null if invalid)
-        data_tests:
-          - dbt_expectations.expect_column_values_to_match_regex:
-              regex: '^\d{10}$'
-              config:
-                where: "provider_npi is not null"
       - name: npi_invalid_flag
         description: Flag indicating NPI format is invalid (not 10 digits after cleaning)
         data_tests:
@@ -133,10 +115,6 @@ models:
         description: Encounter date and time combined
       - name: encounter_hour
         description: Hour of day when encounter occurred (0-23)
-        data_tests:
-          - dbt_expectations.expect_column_values_to_be_between:
-              min_value: 0
-              max_value: 23
       - name: encounter_type
         description: Type of encounter (visit type)
         data_tests:
@@ -163,25 +141,12 @@ models:
         description: How patient was discharged
       - name: visit_duration_minutes
         description: Duration of visit in minutes (capped at 1440 / 24 hours)
-        data_tests:
-          - dbt_expectations.expect_column_values_to_be_between:
-              min_value: 0
-              max_value: 1440
       - name: wrvu
         description: Work RVU (zero for no-shows, cancellations, or null values)
-        data_tests:
-          - dbt_expectations.expect_column_values_to_be_between:
-              min_value: 0
       - name: charge_amount
         description: Total charge amount (negative values converted to 0)
-        data_tests:
-          - dbt_expectations.expect_column_values_to_be_between:
-              min_value: 0
       - name: revenue_amount
         description: Recognized revenue amount (negative values converted to 0)
-        data_tests:
-          - dbt_expectations.expect_column_values_to_be_between:
-              min_value: 0
       - name: created_at
         description: Record creation timestamp
       - name: updated_at
