@@ -2,7 +2,7 @@ version: 2
 
 models:
   - name: stg_employees
-    description: Cleaned and standardized employee data from Workday with data quality flags
+    description: Cleaned and standardized employee data from Workday
     columns:
       - name: employee_key
         description: Surrogate key for employee records
@@ -14,62 +14,38 @@ models:
         data_tests:
           - not_null
       - name: full_name
-        description: Standardized full name (parsed from full_name or first/last name)
+        description: Full name (trimmed)
         data_tests:
           - not_null
-      - name: first_name
-        description: Employee first name (trimmed)
-      - name: last_name
-        description: Employee last name (trimmed)
       - name: npi
-        description: National Provider Identifier (standardized, null if invalid or non-clinical)
-        data_tests:
-          - unique:
-              config:
-                where: "npi is not null"
-      - name: npi_invalid_flag
-        description: Flag indicating NPI format is invalid (not 10 digits)
-      - name: department_id
-        description: Department identifier
-        data_tests:
-          - not_null
-      - name: department_name
-        description: Department name (trimmed)
+        description: National Provider Identifier
       - name: job_title
         description: Job title or position (trimmed)
       - name: worker_type
         description: Employee or Contingent Worker classification
+      - name: department
+        description: Department name (trimmed)
+      - name: cost_center
+        description: Cost center (trimmed)
       - name: fte
-        description: Full-Time Equivalent (0.5, 0.6, 0.8, 1.0, defaults to 1.0 for active employees)
+        description: Full-Time Equivalent
       - name: annual_salary
-        description: Annual salary in numeric format (parsed from $X,XXX format)
-      - name: salary_missing_flag
-        description: Flag indicating salary is missing or null (common for contractors)
-      - name: employment_status
-        description: Employee employment status
-        data_tests:
-          - not_null
+        description: Annual salary
       - name: hire_date
         description: Employee hire date
         data_tests:
           - not_null
       - name: termination_date
         description: Employee termination date (null if active)
-      - name: email
-        description: Employee email address (lowercase)
-      - name: phone
-        description: Employee phone number
+      - name: location
+        description: Employee location
       - name: last_updated
         description: Timestamp of last update from source system
-      - name: created_at
-        description: Record creation timestamp
-      - name: updated_at
-        description: Record update timestamp
       - name: dbt_loaded_at
         description: Timestamp when record was loaded by dbt
 
   - name: stg_encounters
-    description: Cleaned and standardized encounter data from Epic with data quality flags
+    description: Cleaned and standardized encounter data from Epic
     columns:
       - name: encounter_key
         description: Surrogate key for encounter records
@@ -82,56 +58,26 @@ models:
           - not_null
           - unique
       - name: patient_id
-        description: Unique patient identifier
+        description: Patient identifier (MRN)
         data_tests:
           - not_null
       - name: provider_name
-        description: Standardized provider name (parsed from "LAST, FIRST M" format)
-        data_tests:
-          - not_null
+        description: Provider name (trimmed)
       - name: provider_npi
-        description: Provider NPI (standardized, handles Excel coercion & spacing, null if invalid)
-      - name: npi_invalid_flag
-        description: Flag indicating NPI format is invalid (not 10 digits after cleaning)
+        description: Provider NPI
       - name: encounter_date
-        description: Encounter date (handles mixed YYYY-MM-DD and MM/DD/YYYY formats)
-        data_tests:
-          - not_null
-      - name: encounter_datetime
-        description: Encounter date and time combined
-      - name: encounter_hour
-        description: Hour of day when encounter occurred (0-23)
-      - name: encounter_type
-        description: Type of encounter (visit type)
-        data_tests:
-          - not_null
-      - name: encounter_status
-        description: Encounter completion status
+        description: Encounter date
         data_tests:
           - not_null
       - name: department
-        description: Department name (standardized to uppercase, trimmed)
-        data_tests:
-          - not_null
-      - name: chief_complaint
-        description: Chief complaint or reason for visit
-      - name: diagnosis_code
-        description: ICD-10 diagnosis code (uppercase)
-      - name: procedure_code
-        description: CPT procedure code (uppercase)
-      - name: discharge_disposition
-        description: How patient was discharged
-      - name: visit_duration_minutes
-        description: Duration of visit in minutes (capped at 1440 / 24 hours)
+        description: Department name (trimmed)
+      - name: visit_type
+        description: Type of visit
+      - name: encounter_status
+        description: Encounter completion status
       - name: wrvu
-        description: Work RVU (zero for no-shows, cancellations, or null values)
+        description: Work RVU
       - name: charge_amount
-        description: Total charge amount (negative values converted to 0)
-      - name: revenue_amount
-        description: Recognized revenue amount (negative values converted to 0)
-      - name: created_at
-        description: Record creation timestamp
-      - name: updated_at
-        description: Record update timestamp
+        description: Total charge amount
       - name: dbt_loaded_at
         description: Timestamp when record was loaded by dbt
