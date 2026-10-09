@@ -5,13 +5,13 @@ version: '1.0.0'
 config-version: 2
 
 # Project database connection profile
-profile: 'healthcare_analytics'
+profile: 'default'
 
 # These configurations specify where dbt should look for different types of files.
 model-paths: ["models"]
 analysis-paths: ["analysis"]
 test-paths: ["tests"]
-data-paths: ["data"]
+seed-paths: ["data"]
 macro-paths: ["macros"]
 snapshot-paths: ["snapshots"]
 
@@ -23,22 +23,20 @@ clean-targets:
 # Configuring models
 models:
   healthcare_analytics:
+    +materialized: view
     # Staging layer - raw data cleaning and transformations
     staging:
       +materialized: view
-      +schema: staging
       +tags: ['staging']
 
     # Intermediate layer - business logic and aggregations
     intermediate:
       +materialized: view
-      +schema: intermediate
       +tags: ['intermediate']
 
     # Marts layer - final dimensional and fact tables
     marts:
       +materialized: table
-      +schema: marts
       +tags: ['marts']
 
 # Seed configurations
