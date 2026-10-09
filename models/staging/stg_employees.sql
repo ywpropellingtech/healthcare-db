@@ -16,27 +16,27 @@ Staging layer for employee data from Workday
 
 with source_data as (
   select
-    employee_id,
-    first_name,
-    last_name,
-    full_name,
-    npi,
-    department_id,
-    department_name,
-    job_title,
-    worker_type,
-    fte,
-    annual_salary,
-    hire_date,
-    termination_date,
-    status,
-    email,
-    phone,
-    last_updated,
-    created_at,
-    updated_at
+    EMPLOYEE_ID as employee_id,
+    FIRST_NAME as first_name,
+    LAST_NAME as last_name,
+    FULL_NAME as full_name,
+    NPI as npi,
+    DEPARTMENT_ID as department_id,
+    DEPARTMENT_NAME as department_name,
+    JOB_TITLE as job_title,
+    WORKER_TYPE as worker_type,
+    FTE as fte,
+    ANNUAL_SALARY as annual_salary,
+    HIRE_DATE as hire_date,
+    TERMINATION_DATE as termination_date,
+    STATUS as status,
+    EMAIL as email,
+    PHONE as phone,
+    LAST_UPDATED as last_updated,
+    CREATED_AT as created_at,
+    UPDATED_AT as updated_at
   from {{ source('raw_workday', 'WRK_EMPLOYEES') }}
-  where employee_id is not null
+  where EMPLOYEE_ID is not null
 ),
 
 -- Handle full_name parsing if first/last names not available
