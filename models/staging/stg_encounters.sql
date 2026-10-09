@@ -35,7 +35,7 @@ cleaned_data as (
     PATIENT_MRN as patient_id,
     trim(PROVIDER_NAME) as provider_name,
     trim(PROVIDER_NPI) as provider_npi,
-    try_to_date(ENCOUNTER_DATE) as encounter_date,
+    ENCOUNTER_DATE as encounter_date,
     trim(DEPARTMENT) as department,
     trim(VISIT_TYPE) as visit_type,
     trim(ENCOUNTER_STATUS) as encounter_status,

@@ -43,12 +43,12 @@ cleaned_data as (
     trim(COST_CENTER) as cost_center,
     FTE as fte,
     ANNUAL_SALARY as annual_salary,
-    try_to_date(HIRE_DATE) as hire_date,
-    try_to_date(TERMINATION_DATE) as termination_date,
+    HIRE_DATE as hire_date,
+    TERMINATION_DATE as termination_date,
     trim(LOCATION) as location,
-    try_to_timestamp(LAST_UPDATED) as last_updated,
+    LAST_UPDATED as last_updated,
     current_timestamp() as dbt_loaded_at,
-    row_number() over (partition by EMPLOYEE_ID order by try_to_timestamp(LAST_UPDATED) desc) as recency_rank
+    row_number() over (partition by EMPLOYEE_ID order by LAST_UPDATED desc) as recency_rank
   from source_data
 ),
 
