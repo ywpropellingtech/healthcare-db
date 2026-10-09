@@ -18,27 +18,27 @@ Staging layer for encounter data from Epic
 
 with source_data as (
   select
-    ENCOUNTER_ID as encounter_id,
-    PATIENT_ID as patient_id,
-    PROVIDER_NAME as provider_name,
-    PROVIDER_NPI as provider_npi,
-    ENCOUNTER_DATE as encounter_date,
-    ENCOUNTER_TIME as encounter_time,
-    ENCOUNTER_TYPE as encounter_type,
-    ENCOUNTER_STATUS as encounter_status,
-    DEPARTMENT as department,
-    CHIEF_COMPLAINT as chief_complaint,
-    DIAGNOSIS_CODE as diagnosis_code,
-    PROCEDURE_CODE as procedure_code,
-    DISCHARGE_DISPOSITION as discharge_disposition,
-    VISIT_DURATION_MINUTES as visit_duration_minutes,
-    WRVU as wrvu,
-    CHARGE_AMOUNT as charge_amount,
-    REVENUE_AMOUNT as revenue_amount,
-    CREATED_AT as created_at,
-    UPDATED_AT as updated_at
+    "encounter_id",
+    "patient_id",
+    "provider_name",
+    "provider_npi",
+    "encounter_date",
+    "encounter_time",
+    "encounter_type",
+    "encounter_status",
+    "department",
+    "chief_complaint",
+    "diagnosis_code",
+    "procedure_code",
+    "discharge_disposition",
+    "visit_duration_minutes",
+    "wrvu",
+    "charge_amount",
+    "revenue_amount",
+    "created_at",
+    "updated_at"
   from {{ source('raw_epic', 'EPC_ENCOUNTERS') }}
-  where ENCOUNTER_ID is not null
+  where "encounter_id" is not null
 ),
 
 -- Handle mixed date formats: YYYY-MM-DD and MM/DD/YYYY
