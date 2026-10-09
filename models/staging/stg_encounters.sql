@@ -51,15 +51,10 @@ cleaned_data as (
   from source_data
 ),
 
-with_surrogate_key as (
-  select
-    {{ dbt_utils.generate_surrogate_key(['encounter_id', 'patient_id', 'provider_npi']) }} as encounter_key,
-    *
-  from cleaned_data
-)
-
-select *
-from with_surrogate_key
+select
+  ENCOUNTER_ID as encounter_key,
+  *
+from cleaned_data
 where encounter_id is not null
   and patient_id is not null
   and encounter_date is not null

@@ -73,13 +73,8 @@ deduplicated as (
   where recency_rank = 1
 ),
 
-with_surrogate_key as (
-  select
-    {{ dbt_utils.generate_surrogate_key(['employee_id', 'hire_date']) }} as employee_key,
-    *
-  from deduplicated
-)
-
-select *
-from with_surrogate_key
+select
+  EMPLOYEE_ID as employee_key,
+  *
+from deduplicated
 where employee_id is not null
