@@ -1,7 +1,6 @@
 {{
   config(
     materialized='view',
-    schema='intermediate',
     tags=['intermediate', 'encounters'],
     pre_hook="{{ log('Starting int_employee_encounters transformation', info=true) }}"
   )

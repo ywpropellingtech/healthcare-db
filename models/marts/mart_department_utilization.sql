@@ -1,7 +1,6 @@
 {{
   config(
     materialized='table',
-    schema='marts',
     tags=['marts', 'aggregates', 'department_utilization'],
     indexes=[
       {
@@ -128,3 +127,4 @@ select
   pct_encounters_with_revenue,
   current_timestamp() as dbt_loaded_at
 from with_calculations
+

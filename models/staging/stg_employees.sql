@@ -1,7 +1,6 @@
 {{
   config(
     materialized='view',
-    schema='staging',
     tags=['staging', 'employees'],
     pre_hook="{{ log('Starting stg_employees transformation', info=true) }}"
   )

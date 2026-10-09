@@ -1,7 +1,6 @@
 {{
   config(
     materialized='view',
-    schema='intermediate',
     tags=['intermediate', 'metrics'],
     pre_hook="{{ log('Starting int_provider_metrics transformation', info=true) }}"
   )

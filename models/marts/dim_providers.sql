@@ -1,7 +1,6 @@
 {{
   config(
     materialized='table',
-    schema='marts',
     tags=['marts', 'dimensions', 'providers'],
     indexes=[
       {
@@ -73,3 +72,4 @@ with_full_name as (
 select *
 from with_full_name
 where provider_npi is not null
+

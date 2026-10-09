@@ -1,7 +1,6 @@
 {{
   config(
     materialized='table',
-    schema='marts',
     tags=['marts', 'aggregates', 'provider_performance'],
     indexes=[
       {
@@ -146,3 +145,4 @@ select
   most_common_procedure,
   current_timestamp() as dbt_loaded_at
 from with_calculations
+

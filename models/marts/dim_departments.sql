@@ -1,7 +1,6 @@
 {{
   config(
     materialized='table',
-    schema='marts',
     tags=['marts', 'dimensions', 'departments'],
     indexes=[
       {
@@ -81,3 +80,4 @@ classified as (
 select *
 from classified
 where department_id is not null
+

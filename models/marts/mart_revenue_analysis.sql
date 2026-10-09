@@ -1,7 +1,6 @@
 {{
   config(
     materialized='table',
-    schema='marts',
     tags=['marts', 'aggregates', 'revenue_analysis'],
     indexes=[
       {
@@ -176,3 +175,4 @@ select
   current_timestamp() as dbt_loaded_at
 from with_key_and_dates
 where total_revenue is not null
+

@@ -1,7 +1,6 @@
 {{
   config(
     materialized='view',
-    schema='staging',
     tags=['staging', 'encounters'],
     pre_hook="{{ log('Starting stg_encounters transformation', info=true) }}"
   )

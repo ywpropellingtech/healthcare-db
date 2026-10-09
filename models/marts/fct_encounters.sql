@@ -1,7 +1,6 @@
 {{
   config(
     materialized='table',
-    schema='marts',
     tags=['marts', 'facts', 'encounters'],
     indexes=[
       {
@@ -65,3 +64,4 @@ select
 from {{ ref('int_employee_encounters') }} e
 where e.encounter_date >= '2020-01-01'
   and e.encounter_date <= current_date()
+
