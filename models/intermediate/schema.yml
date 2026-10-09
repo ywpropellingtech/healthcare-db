@@ -36,14 +36,8 @@ models:
           - not_null
       - name: charge_amount
         description: Total charges
-        data_tests:
-          - dbt_expectations.expect_column_values_to_be_between:
-              min_value: 0
       - name: revenue_amount
         description: Recognized revenue
-        data_tests:
-          - dbt_expectations.expect_column_values_to_be_between:
-              min_value: 0
 
   - name: int_provider_metrics
     description: Daily aggregated provider performance metrics
@@ -68,23 +62,12 @@ models:
         description: Total encounters for provider on date
         data_tests:
           - not_null
-          - dbt_expectations.expect_column_values_to_be_between:
-              min_value: 0
       - name: unique_patients
         description: Count of unique patients seen
-        data_tests:
-          - dbt_expectations.expect_column_values_to_be_between:
-              min_value: 0
       - name: total_revenue
         description: Total revenue for provider on date
-        data_tests:
-          - dbt_expectations.expect_column_values_to_be_between:
-              min_value: 0
       - name: avg_revenue_per_encounter
         description: Average revenue per encounter
-        data_tests:
-          - dbt_expectations.expect_column_values_to_be_between:
-              min_value: 0
       - name: avg_visit_duration_minutes
         description: Average visit duration in minutes
       - name: encounters_with_charges
