@@ -23,26 +23,10 @@ clean-targets:
 # Configuring models
 models:
   healthcare_analytics:
-    +materialized: view
     # Staging layer - raw data cleaning and transformations
     staging:
       +materialized: view
       +tags: ['staging']
-
-    # Intermediate layer - business logic and aggregations
-    intermediate:
-      +materialized: view
-      +tags: ['intermediate']
-
-    # Marts layer - final dimensional and fact tables
-    marts:
-      +materialized: table
-      +tags: ['marts']
-
-# Seed configurations
-seeds:
-  +schema: seeds
-  +tags: ['seeds']
 
 vars:
   # Global variables for data quality checks
