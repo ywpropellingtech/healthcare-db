@@ -137,6 +137,22 @@ group by visit_type;
 
 ### 2. mart_cost_per_wrvu
 
+⚠️ **IMPORTANT COVERAGE LIMITATION**
+
+**Data Coverage:** 34 of 52 employees (65.4%)
+- **Included:** Employees with encounter data in Epic
+- **Excluded:** 18 employees with no encounters (likely non-clinical staff, new hires, or terminated employees)
+
+**Impact on Analysis:**
+- Service line benchmarks based on subset of employees (not full team)
+- Efficiency rankings limited to employees with clinical activity
+- Comparisons are valid WITHIN the 34 analyzed employees
+- Cannot compare 0-activity employees
+
+**Recommendation:** Use rankings and efficiency analysis with understanding that benchmarks represent active clinical staff only. See "Data Limitations" section below for details.
+
+---
+
 **Purpose:** Analyze employee efficiency and compensation by comparing salary to wRVU production.
 
 **Use Cases:**
@@ -293,6 +309,55 @@ select * from analytics.dbt_ywang.quality_checks_mart order by check_name;
 - `issue_count = 0` → ✅ Check PASSED
 - `issue_count > 0` → ⚠️ Check FAILED (investigate)
 - `issue_count` is informational → 📊 Summary statistic
+
+---
+
+## Data Limitations & Known Issues
+
+### mart_cost_per_wrvu Coverage Gap (IMPORTANT)
+
+**Coverage:** 34 of 52 employees analyzed (65.4%)
+
+**Missing Employees:** 18 employees have no encounter data in Epic
+
+**Why This Matters:**
+```
+Scenario: Calculating Cardiology average cost per wRVU
+- Total Cardiology employees: 15
+- Analyzed: 9 (60%)
+- NOT analyzed: 6
+- Service line average: Based only on 9, not true average of all 15
+- Rankings: Comparing 9 employees to average of 9 only
+```
+
+**Employee Categories Without Encounters:**
+1. **Non-Clinical Staff** (Admin, managers, directors)
+   - No encounters = Cannot calculate cost per wRVU
+   - OK to exclude (salary not tied to patient encounters)
+
+2. **New Hires** (Hired <3 months ago)
+   - Too new to have established encounter patterns
+   - Will appear in future months as they gain experience
+
+3. **Terminated Employees** (With termination_date)
+   - Left before current analysis period
+   - No current productivity data needed
+
+4. **Other** (To be investigated)
+   - May indicate data gaps or Epic system issues
+   - Review `investigate_employees_no_encounters.sql` for details
+
+**How to Interpret Results:**
+- ✅ **Efficiency rankings:** Valid for comparing the 34 analyzed employees
+- ⚠️ **Service line benchmarks:** Represent analyzed employees only (may not be representative)
+- ❌ **Compensation fairness:** Cannot compare clinical to non-clinical staff
+- ❌ **Workforce-wide metrics:** Use with caution (missing 34.6% of staff)
+
+**Recommendations:**
+1. Use efficiency rankings for clinical staff comparisons only
+2. Add disclaimer to any reports: "Based on 34 of 52 employees with encounter data"
+3. Run `investigate_employees_no_encounters.sql` to categorize the 18 missing employees
+4. Consider separate analysis for non-clinical staff (salary vs. overhead costs, not wRVU)
 
 ---
 
