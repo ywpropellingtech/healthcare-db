@@ -107,9 +107,9 @@ union all
 -- 14. Check worker_type has expected values
 select 'unexpected_worker_type' as check_name,
        count(*) as issue_count,
-       'Only EMPLOYEE or CONTINGENT_WORKER expected' as expected
+       'Only EMPLOYEE or CONTINGENT WORKER expected' as expected
 from {{ ref('stg_employees') }}
-where worker_type not in ('EMPLOYEE', 'CONTINGENT_WORKER')
+where worker_type not in ('EMPLOYEE', 'CONTINGENT WORKER')
    and worker_type is not null
 union all
 
