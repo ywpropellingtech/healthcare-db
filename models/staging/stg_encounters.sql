@@ -29,12 +29,26 @@ with source_data as (
   where ENCOUNTER_ID is not null
 ),
 
+-- Lookup table: get most common NPI per provider (to fill NULLs)
+provider_npi_lookup as (
+  select distinct provider_name,
+         first_value(provider_npi) over (partition by provider_name order by npi_frequency desc, provider_npi desc) as known_npi
+  from (
+    select provider_name,
+           provider_npi,
+           count(*) as npi_frequency
+    from {{ source('raw_epic', 'EPC_ENCOUNTERS') }}
+    where provider_npi is not null
+    group by provider_name, provider_npi
+  )
+),
+
 cleaned_data as (
   select
     ENCOUNTER_ID as encounter_id,
     PATIENT_MRN as patient_id,
     trim(PROVIDER_NAME) as provider_name,
-    trim(PROVIDER_NPI) as provider_npi,
+    coalesce(trim(PROVIDER_NPI), pnl.known_npi) as provider_npi,
     ENCOUNTER_DATE as encounter_date,
     trim(DEPARTMENT) as department,
     upper(trim(VISIT_TYPE)) as visit_type,
@@ -50,6 +64,7 @@ cleaned_data as (
     current_timestamp() as dbt_loaded_at,
     row_number() over (partition by ENCOUNTER_ID, PATIENT_MRN, ENCOUNTER_DATE order by ENCOUNTER_ID) as dedup_rank
   from source_data
+  left join provider_npi_lookup pnl on trim(PROVIDER_NAME) = pnl.provider_name
 ),
 
 -- Deduplicate identical encounter records (loaded twice)
