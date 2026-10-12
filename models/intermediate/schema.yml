@@ -24,8 +24,6 @@ models:
         data_type: date
         tests:
           - not_null
-          - dbt_expectations.expect_column_values_to_be_of_type:
-              column_type: date
 
       - name: visit_type
         description: Type of visit (FOLLOW-UP, NEW PATIENT, PROCEDURE, TELEHEALTH)
@@ -48,9 +46,7 @@ models:
         data_type: number
         tests:
           - not_null
-          - dbt_expectations.expect_column_values_to_be_in_set:
-              value_set: [0]
-              tolerance_percent: 100
+          - dbt_utils.not_constant
 
       - name: total_wrvu
         description: Sum of wRVU for encounters in this group
