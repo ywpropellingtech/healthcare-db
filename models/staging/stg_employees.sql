@@ -42,7 +42,7 @@ cleaned_data as (
     trim(DEPARTMENT) as department,
     trim(COST_CENTER) as cost_center,
     FTE as fte,
-    ANNUAL_SALARY as annual_salary,
+    try_to_number(replace(replace(ANNUAL_SALARY, '$', ''), ',', '')) as annual_salary,
     HIRE_DATE as hire_date,
     TERMINATION_DATE as termination_date,
     trim(LOCATION) as location,
