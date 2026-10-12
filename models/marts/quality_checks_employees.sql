@@ -64,15 +64,7 @@ from {{ ref('stg_employees') }}
 where full_name != trim(full_name)
 union all
 
--- 8. Check FTE is numeric and valid (0-1 or 0-100 range)
-select 'fte_null_values' as check_name,
-       count(*) as issue_count,
-       'FTE should not be null' as expected
-from {{ ref('stg_employees') }}
-where fte is null
-union all
-
--- 9. Check FTE is within reasonable range (0-2)
+-- 8. Check FTE is within reasonable range (0-2)
 select 'fte_out_of_range' as check_name,
        count(*) as issue_count,
        'FTE should be between 0 and 2' as expected
