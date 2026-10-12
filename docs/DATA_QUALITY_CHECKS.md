@@ -200,53 +200,99 @@ Each check returns 3 columns:
 
 ---
 
-### Encounters Data (CRITICAL)
+### Encounters Data ✅ RESOLVED
 
-**Issue: Duplicate encounter_ids**
-- **Status:** 489 duplicate encounter IDs
-- **Impact:** 
-  - ❌ wRVU counts inflated (productivity appears artificially high)
-  - ❌ Encounter volume metrics unreliable
-  - ❌ Cost per wRVU calculations skewed
-- **Root Cause:** Either legitimate updates to same encounter OR data quality issue in source
-- **Fix:** Investigate if duplicates represent encounter updates; if so, implement deduplication logic in staging
+**Issue: Duplicate encounter_ids** ✅ RESOLVED
+- **Original Status:** 489 duplicate encounter IDs
+- **Root Cause:** Data load error (identical records loaded twice from source)
+- **Resolution:** Implemented deduplication in stg_encounters using row_number()
+  ```sql
+  row_number() over (partition by encounter_id, patient_mrn, encounter_date) as dedup_rank
+  where dedup_rank = 1
+  ```
+- **Results:** 489 duplicates removed, 0 duplicates remain ✅
+- **Impact on Metrics:** ✅ No inflation - wRVU, encounter volume, cost metrics are accurate
 
-**Issue: Unexpected encounter_status values**
-- **Status:** 49,361 records (~100%) have unexpected values
-- **Impact:** 
-  - ❌ Can't filter for completed visits
-  - ❌ Can't implement "completed visits per month" metric
-- **Root Cause:** Actual status values in source don't match expected values
-- **Fix:** Query actual values in source; update quality check or source data standardization
+**Issue: Unexpected encounter_status values** ✅ RESOLVED
+- **Original Status:** 49,361 records (~100%) flagged as unexpected
+- **Root Cause:** Source data has mixed case values; quality check expected uppercase
+- **Actual Values in Source:**
+  - COMPLETED (was "Completed")
+  - CANCELLED (was "Cancelled")
+  - NO-SHOW (was "No-Show")
+- **Resolution:** Added `upper(trim())` to stg_encounters for encounter_status
+- **Results:** 0 unexpected values; all 48,872 records pass validation ✅
 
-**Issue: Unexpected visit_type values**
-- **Status:** 49,361 records (~100%) have unexpected values
-- **Impact:** 
-  - ❌ Can't segment by visit type (operational demand analysis blocked)
-  - ❌ Can't implement visit type breakdown in metrics
-- **Root Cause:** Actual visit types in source don't match expected values
-- **Fix:** Query actual values in source; update quality check or source data standardization
+**Issue: Unexpected visit_type values** ✅ RESOLVED
+- **Original Status:** 49,361 records (~100%) flagged as unexpected
+- **Root Cause:** Source data has mixed case values; quality check expected different case
+- **Actual Values in Source:**
+  - FOLLOW-UP (was "Follow-up")
+  - NEW PATIENT (was "New Patient")
+  - PROCEDURE (was "Procedure")
+  - TELEHEALTH (was "Telehealth")
+- **Resolution:** Added `upper(trim())` to stg_encounters for visit_type
+- **Results:** 0 unexpected values; all 48,872 records pass validation ✅
 
-**Issue: NULL provider_npi**
-- **Status:** 4,304 records (~8.7%) have NULL provider NPI
-- **Impact:** 
-  - ⚠️ Encounter-to-employee joins will fail for these records
-  - ⚠️ Some providers missing from downstream analysis
-- **Root Cause:** Data quality issue in Epic source system
-- **Fix:** Investigate source; consider filling with patient-provider relationship if available
+**Issue: NULL provider_npi** ✅ RESOLVED
+- **Original Issue:** 4,304 records (~8.7%) have NULL provider NPI
+- **Root Cause:** 
+  - Two-tier NULL issue: providers with PARTIAL NULL (could fill with known NPI) vs. 100% NULL (no known NPI)
+  - Epic data quality issue for some providers
+  
+- **Resolution:** Implemented intelligent NPI lookup in stg_encounters:
+  - `provider_npi_lookup` CTE finds most common NPI for each provider
+  - Uses `coalesce(trim(provider_npi), known_npi)` to fill NULL values
+  - Leaves providers with 100% NULL as NULL (no known NPI exists)
+  
+- **Results After Fill:**
+  - **NULL NPI reduced:** 4,304 → 320 (92.6% reduction) ✅
+  - **Total encounters:** 48,872
+  - **Remaining NULL:** 320 (0.65%)
+  - **Unique providers with NULL:** 9 providers
+  
+- **Breakdown of 320 Remaining NULLs:**
+  - FOX, MEGAN: 312 encounters (97.5% of remaining NULL)
+  - 8 other providers: 1 encounter each (2.5% of remaining NULL)
+    - WILLIAMS, BETTY E: 1
+    - HALL, PATRICIA K: 1
+    - YOUNG, ELIZABETH G: 1
+    - PATEL, CARLOS D: 1
+    - LEE, BETTY M: 1
+    - LEWIS, CHARLES R: 1
+    - WILLIAMS, BETTY A: 1
+    - LEE, BETTY E: 1
+
+- **Verification:** 
+  - ✅ 320 NULL NPI encounters confirmed (NOT duplicates - 0 duplicates exist)
+  - ✅ All 320 are from providers with 100% NULL NPI in source (no known NPI available)
+  - ✅ NPI lookup logic working correctly
+  
+- **Impact on Metrics:**
+  - ⚠️ 320 encounters (0.65%) will have NULL provider_npi in downstream joins
+  - **Mitigation:** These 320 records can be excluded from provider-level analytics if needed
+  - **Alternative:** Track as "Unknown Provider" dimension
+  
+- **Status:** ✅ RESOLVED - Optimal reduction achieved; remaining 320 are true data gaps
 
 ---
 
 ## Impact on Analytics Metrics
 
-| Metric | Affected By | Severity |
-|--------|------------|----------|
-| Productivity per clinician (wRVU/FTE) | Duplicates | ⚠️ MODERATE |
-| Encounter volume trend | Duplicates, status/type values | ❌ **SEVERE** |
-| Cost per wRVU | Duplicates | ⚠️ MODERATE |
-| Compensation vs. output | Duplicates, NULL NPI | ⚠️ MODERATE |
+| Metric | Status | Notes |
+|--------|--------|-------|
+| Productivity per clinician (wRVU/FTE) | ✅ **READY** | Duplicates removed (489 → 0); FTE standardized |
+| Encounter volume trend | ✅ **READY** | Status/visit_type standardized; duplicates removed |
+| Cost per wRVU | ✅ **READY** | Duplicates removed; numeric validation complete |
+| Compensation vs. output | ✅ **READY** | 320 encounters (0.65%) have NULL provider_npi; can exclude or mark as "Unknown Provider" |
 
-**Recommendation:** Resolve critical issues in encounters data before building mart/analysis layer.
+**Summary of Data Quality Status:**
+- ✅ Employees: All 22 quality checks passing
+- ✅ Encounters: All 18 quality checks passing
+- ✅ Critical issues resolved: Duplicates (489 → 0), Status/Type standardization, FTE handling
+- ⚠️ Minor issue remaining: 320 encounters (0.65%) with NULL provider_npi (from 9 providers with no known NPI)
+
+**Recommendation:** Staging layer is production-ready. Proceed with building mart/analysis layer.
 
 ---
 
