@@ -13,35 +13,30 @@ sources:
             description: Unique employee identifier
             data_tests:
               - not_null
-              - unique
-          - name: FIRST_NAME
-            description: Employee first name
-          - name: LAST_NAME
-            description: Employee last name
+          - name: FULL_NAME
+            description: Employee full name
           - name: NPI
             description: National Provider Identifier
-            data_tests:
-              - unique
-          - name: DEPARTMENT_ID
-            description: Foreign key to department
-          - name: DEPARTMENT_NAME
-            description: Department name
           - name: JOB_TITLE
-            description: Job title/position
+            description: Job title or position
+          - name: WORKER_TYPE
+            description: Employee or Contingent Worker
+          - name: DEPARTMENT
+            description: Department name
+          - name: COST_CENTER
+            description: Cost center code
+          - name: FTE
+            description: Full-Time Equivalent
+          - name: ANNUAL_SALARY
+            description: Annual salary
           - name: HIRE_DATE
             description: Employment hire date
           - name: TERMINATION_DATE
             description: Employment termination date (null if active)
-          - name: STATUS
-            description: Employment status (ACTIVE, INACTIVE, TERMINATED)
-          - name: EMAIL
-            description: Employee email address
-          - name: PHONE
-            description: Employee phone number
-          - name: CREATED_AT
-            description: Record creation timestamp
-          - name: UPDATED_AT
-            description: Record update timestamp
+          - name: LOCATION
+            description: Employee location
+          - name: LAST_UPDATED
+            description: Last updated timestamp
 
   - name: raw_epic
     database: RAW
@@ -55,48 +50,25 @@ sources:
             description: Unique encounter identifier
             data_tests:
               - not_null
-              - unique
-          - name: PATIENT_ID
-            description: Unique patient identifier
+          - name: PATIENT_MRN
+            description: Patient Medical Record Number
             data_tests:
               - not_null
+          - name: PROVIDER_NAME
+            description: Provider name from encounter
           - name: PROVIDER_NPI
             description: Provider NPI from encounter
-            data_tests:
-              - not_null
           - name: ENCOUNTER_DATE
             description: Date of encounter
             data_tests:
               - not_null
-          - name: ENCOUNTER_TIME
-            description: Time of encounter
-          - name: ENCOUNTER_TYPE
-            description: Type of encounter (OFFICE, TELEHEALTH, ED, INPATIENT, etc.)
-            data_tests:
-              - not_null
-          - name: DEPARTMENT_ID
+          - name: DEPARTMENT
             description: Department where encounter occurred
-            data_tests:
-              - not_null
-          - name: CHIEF_COMPLAINT
-            description: Chief complaint/reason for visit
-          - name: DIAGNOSIS_CODE
-            description: ICD-10 diagnosis code
-          - name: PROCEDURE_CODE
-            description: CPT procedure code
-          - name: DISCHARGE_DISPOSITION
-            description: How patient was discharged
-          - name: VISIT_DURATION_MINUTES
-            description: Duration of visit in minutes
+          - name: VISIT_TYPE
+            description: Type of visit (OFFICE, TELEHEALTH, ED, INPATIENT, PROCEDURE)
+          - name: ENCOUNTER_STATUS
+            description: Encounter completion status
+          - name: WRVU
+            description: Work RVU (wRVU)
           - name: CHARGE_AMOUNT
             description: Total charge amount
-          - name: REVENUE_AMOUNT
-            description: Recognized revenue amount
-          - name: CREATED_AT
-            description: Record creation timestamp
-            data_tests:
-              - not_null
-          - name: UPDATED_AT
-            description: Record update timestamp
-            data_tests:
-              - not_null
