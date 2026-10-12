@@ -49,10 +49,10 @@ cleaned_data as (
     end as charge_amount,
     current_timestamp() as dbt_loaded_at
   from source_data
-),
+)
 
 select
-  ENCOUNTER_ID as encounter_key,
+  encounter_id as encounter_key,
   *
 from cleaned_data
 where encounter_id is not null
