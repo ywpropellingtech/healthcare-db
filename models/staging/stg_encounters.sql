@@ -32,11 +32,19 @@ with source_data as (
 -- Lookup table: get most common NPI per provider (to fill NULLs)
 provider_npi_lookup as (
   select
-    trim(PROVIDER_NAME) as provider_name,
-    first_value(trim(PROVIDER_NPI)) over (partition by trim(PROVIDER_NAME) order by count(*) desc, trim(PROVIDER_NPI) desc) as known_npi
-  from {{ source('raw_epic', 'EPC_ENCOUNTERS') }}
-  where PROVIDER_NPI is not null
-  group by trim(PROVIDER_NAME), trim(PROVIDER_NPI)
+    provider_name,
+    known_npi
+  from (
+    select
+      trim(PROVIDER_NAME) as provider_name,
+      trim(PROVIDER_NPI) as known_npi,
+      count(*) as npi_frequency,
+      row_number() over (partition by trim(PROVIDER_NAME) order by count(*) desc) as rn
+    from {{ source('raw_epic', 'EPC_ENCOUNTERS') }}
+    where PROVIDER_NPI is not null
+    group by trim(PROVIDER_NAME), trim(PROVIDER_NPI)
+  )
+  where rn = 1
 ),
 
 cleaned_data as (
