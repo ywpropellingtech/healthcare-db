@@ -10,7 +10,7 @@
 Staging layer for employee data from Workday
 - Cleans and normalizes employee records
 - Standardizes name, NPI, salary, and FTE formats
-- Handles missing values gracefully
+- EXCLUDES employees with NULL FTE (not included in analysis)
 */
 
 with source_data as (
@@ -41,7 +41,7 @@ cleaned_data as (
     upper(trim(WORKER_TYPE)) as worker_type,
     trim(DEPARTMENT) as department,
     trim(COST_CENTER) as cost_center,
-    coalesce(FTE, 1.0) as fte,
+    FTE as fte,
     try_to_number(replace(replace(ANNUAL_SALARY, '$', ''), ',', '')) as annual_salary,
     HIRE_DATE as hire_date,
     TERMINATION_DATE as termination_date,
@@ -78,3 +78,4 @@ select
   *
 from deduplicated
 where employee_id is not null
+  and fte is not null

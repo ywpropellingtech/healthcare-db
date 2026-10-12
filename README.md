@@ -280,10 +280,10 @@ select * from analytics.dbt_ywang.quality_checks_mart;
 
 #### NULL FTE Handling ✅
 - **Issue:** 2 employees with NULL FTE in Workday source
-- **Resolution:** Filled with 1.0 (full-time) in staging layer
-- **Validation:** Query confirmed 0 NULLs in stg_employees ✅
-- **Impact:** 3.8% of workforce, <2% of wRVU, LOW risk
-- **Status:** SAFE & CONSERVATIVE ✅
+- **Resolution:** Excluded from stg_employees (where fte is not null)
+- **Validation:** 50 employees remain in stg_employees with valid FTE ✅
+- **Impact:** 2 employees excluded from cost_per_wrvu analysis (3.8%)
+- **Status:** CLEAN & ASSUMPTION-FREE ✅
 
 ### Critical Data Quality Issues Resolved:
 
