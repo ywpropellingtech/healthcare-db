@@ -91,4 +91,83 @@ select 'date_range_coverage' as check_name,
        0 as issue_count,
        concat('Earliest: ', min(encounter_month), ' Latest: ', max(encounter_month)) as expected
 from {{ ref('mart_encounter_volume_trend') }}
+union all
+
+-- Cost per wRVU checks
+-- 11. Check for null employee_key in cost mart
+select 'cost_per_wrvu_employee_key_null' as check_name,
+       count(*) as issue_count,
+       'No nulls in employee_key' as expected
+from {{ ref('mart_cost_per_wrvu') }}
+where employee_key is null
+union all
+
+-- 12. Check for null cost_per_wrvu
+select 'cost_per_wrvu_null' as check_name,
+       count(*) as issue_count,
+       'No nulls in cost_per_wrvu' as expected
+from {{ ref('mart_cost_per_wrvu') }}
+where cost_per_wrvu is null
+union all
+
+-- 13. Check for negative cost_per_wrvu
+select 'cost_per_wrvu_negative' as check_name,
+       count(*) as issue_count,
+       'No negative cost per wRVU' as expected
+from {{ ref('mart_cost_per_wrvu') }}
+where cost_per_wrvu < 0
+union all
+
+-- 14. Check quartile values are valid
+select 'cost_per_wrvu_quartile_invalid' as check_name,
+       count(*) as issue_count,
+       'Quartiles should be 1-4' as expected
+from {{ ref('mart_cost_per_wrvu') }}
+where cost_per_wrvu_quartile not in (1, 2, 3, 4)
+union all
+
+-- 15. Check wrvu_per_fte quartiles are valid
+select 'wrvu_per_fte_quartile_invalid' as check_name,
+       count(*) as issue_count,
+       'Quartiles should be 1-4' as expected
+from {{ ref('mart_cost_per_wrvu') }}
+where wrvu_per_fte_quartile not in (1, 2, 3, 4)
+union all
+
+-- 16. Check efficiency_category values
+select 'unexpected_efficiency_category' as check_name,
+       count(*) as issue_count,
+       'Only Above/Below/At Average expected' as expected
+from {{ ref('mart_cost_per_wrvu') }}
+where efficiency_category not in ('Above Average', 'Below Average', 'At Average')
+union all
+
+-- 17. Check efficiency_ratio is positive
+select 'efficiency_ratio_non_positive' as check_name,
+       count(*) as issue_count,
+       'Efficiency ratio should be positive' as expected
+from {{ ref('mart_cost_per_wrvu') }}
+where efficiency_ratio <= 0
+union all
+
+-- 18. Summary: total employees by service line
+select 'employees_by_service_line' as check_name,
+       0 as issue_count,
+       concat('Total employees in cost analysis: ', count(distinct employee_key)) as expected
+from {{ ref('mart_cost_per_wrvu') }}
+union all
+
+-- 19. Summary: cost per wRVU statistics by service line
+select 'cost_per_wrvu_service_line_stats' as check_name,
+       0 as issue_count,
+       concat('Min=', round(min(cost_per_wrvu), 2), ' Max=', round(max(cost_per_wrvu), 2),
+              ' Median=', round(percentile_cont(0.5) within group (order by cost_per_wrvu), 2)) as expected
+from {{ ref('mart_cost_per_wrvu') }}
+union all
+
+-- 20. Total records check for cost mart
+select 'mart_cost_per_wrvu_total_records' as check_name,
+       count(*) as issue_count,
+       'Total rows in cost per wRVU mart' as expected
+from {{ ref('mart_cost_per_wrvu') }}
 order by check_name
