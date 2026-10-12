@@ -71,10 +71,10 @@ deduplicated as (
     dbt_loaded_at
   from cleaned_data
   where recency_rank = 1
-),
+)
 
 select
-  EMPLOYEE_ID as employee_key,
+  employee_id as employee_key,
   *
 from deduplicated
 where employee_id is not null
