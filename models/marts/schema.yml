@@ -1,0 +1,22 @@
+version: 2
+
+models:
+  - name: quality_checks_encounters
+    description: Data quality validation checks for stg_encounters model - validates standardization, transformations, and readiness for mart layer
+    columns:
+      - name: check_name
+        description: Name of the quality check performed
+      - name: issue_count
+        description: Number of issues found by this check (0 means pass)
+      - name: expected
+        description: Expected result or summary statistic from the check
+
+  - name: quality_checks_employees
+    description: Data quality validation checks for stg_employees model - validates dimension table readiness
+    columns:
+      - name: check_name
+        description: Name of the quality check performed
+      - name: issue_count
+        description: Number of issues found by this check (0 means pass)
+      - name: expected
+        description: Expected result or summary statistic from the check
