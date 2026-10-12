@@ -37,8 +37,8 @@ cleaned_data as (
     trim(PROVIDER_NPI) as provider_npi,
     ENCOUNTER_DATE as encounter_date,
     trim(DEPARTMENT) as department,
-    trim(VISIT_TYPE) as visit_type,
-    trim(ENCOUNTER_STATUS) as encounter_status,
+    upper(trim(VISIT_TYPE)) as visit_type,
+    upper(trim(ENCOUNTER_STATUS)) as encounter_status,
     case
       when WRVU is null or WRVU < 0 then 0
       else WRVU

@@ -93,7 +93,7 @@ select 'unexpected_encounter_status' as check_name,
        count(*) as issue_count,
        'Only expected status values should exist' as expected
 from {{ ref('stg_encounters') }}
-where encounter_status not in ('COMPLETED', 'CANCELLED', 'NO-SHOW', 'PENDING')
+where encounter_status not in ('COMPLETED', 'CANCELLED', 'NO-SHOW')
 union all
 
 -- 12. Check visit_type has expected values (for dimension filtering)
@@ -101,7 +101,7 @@ select 'unexpected_visit_type' as check_name,
        count(*) as issue_count,
        'Only expected visit types should exist' as expected
 from {{ ref('stg_encounters') }}
-where visit_type not in ('OFFICE', 'TELEHEALTH', 'ED', 'INPATIENT', 'PROCEDURE')
+where visit_type not in ('FOLLOW-UP', 'NEW PATIENT', 'PROCEDURE', 'TELEHEALTH')
    and visit_type is not null
 union all
 
