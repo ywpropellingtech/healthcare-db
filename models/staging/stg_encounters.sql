@@ -31,40 +31,36 @@ with source_data as (
 
 -- Lookup table: get most common NPI per provider (to fill NULLs)
 provider_npi_lookup as (
-  select distinct provider_name,
-         first_value(provider_npi) over (partition by provider_name order by npi_frequency desc, provider_npi desc) as known_npi
-  from (
-    select provider_name,
-           provider_npi,
-           count(*) as npi_frequency
-    from {{ source('raw_epic', 'EPC_ENCOUNTERS') }}
-    where provider_npi is not null
-    group by provider_name, provider_npi
-  )
+  select
+    trim(PROVIDER_NAME) as provider_name,
+    first_value(trim(PROVIDER_NPI)) over (partition by trim(PROVIDER_NAME) order by count(*) desc, trim(PROVIDER_NPI) desc) as known_npi
+  from {{ source('raw_epic', 'EPC_ENCOUNTERS') }}
+  where PROVIDER_NPI is not null
+  group by trim(PROVIDER_NAME), trim(PROVIDER_NPI)
 ),
 
 cleaned_data as (
   select
-    ENCOUNTER_ID as encounter_id,
-    PATIENT_MRN as patient_id,
-    trim(PROVIDER_NAME) as provider_name,
-    coalesce(trim(PROVIDER_NPI), pnl.known_npi) as provider_npi,
-    ENCOUNTER_DATE as encounter_date,
-    trim(DEPARTMENT) as department,
-    upper(trim(VISIT_TYPE)) as visit_type,
-    upper(trim(ENCOUNTER_STATUS)) as encounter_status,
+    sd.ENCOUNTER_ID as encounter_id,
+    sd.PATIENT_MRN as patient_id,
+    trim(sd.PROVIDER_NAME) as provider_name,
+    coalesce(trim(sd.PROVIDER_NPI), pnl.known_npi) as provider_npi,
+    sd.ENCOUNTER_DATE as encounter_date,
+    trim(sd.DEPARTMENT) as department,
+    upper(trim(sd.VISIT_TYPE)) as visit_type,
+    upper(trim(sd.ENCOUNTER_STATUS)) as encounter_status,
     case
-      when WRVU is null or WRVU < 0 then 0
-      else WRVU
+      when sd.WRVU is null or sd.WRVU < 0 then 0
+      else sd.WRVU
     end as wrvu,
     case
-      when CHARGE_AMOUNT is null or CHARGE_AMOUNT < 0 then 0
-      else CHARGE_AMOUNT
+      when sd.CHARGE_AMOUNT is null or sd.CHARGE_AMOUNT < 0 then 0
+      else sd.CHARGE_AMOUNT
     end as charge_amount,
     current_timestamp() as dbt_loaded_at,
-    row_number() over (partition by ENCOUNTER_ID, PATIENT_MRN, ENCOUNTER_DATE order by ENCOUNTER_ID) as dedup_rank
-  from source_data
-  left join provider_npi_lookup pnl on trim(PROVIDER_NAME) = pnl.provider_name
+    row_number() over (partition by sd.ENCOUNTER_ID, sd.PATIENT_MRN, sd.ENCOUNTER_DATE order by sd.ENCOUNTER_ID) as dedup_rank
+  from source_data sd
+  left join provider_npi_lookup pnl on trim(sd.PROVIDER_NAME) = pnl.provider_name
 ),
 
 -- Deduplicate identical encounter records (loaded twice)
