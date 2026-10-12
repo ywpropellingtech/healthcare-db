@@ -112,10 +112,10 @@ Cleaned and standardized employee data from Workday.
 - `hire_date`, `termination_date`, `location`, `last_updated`
 
 **Quality Metrics:** 
-- 52 unique employees ✅
+- 50 employees with valid FTE ✅ (2 with NULL FTE excluded)
 - No nulls in key fields ✅
 - Salary range: $49K-$556K
-- FTE range: 0.5-1.0 (2 NULL defaulted to 1.0) ✅
+- FTE range: 0.5-1.0 (2 NULL FTE rows excluded from analysis) ✅
 - All 22 quality checks passing ✅
 
 ---
