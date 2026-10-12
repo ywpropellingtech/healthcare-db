@@ -57,17 +57,16 @@ where visit_type not in ('FOLLOW-UP', 'NEW PATIENT', 'PROCEDURE', 'TELEHEALTH')
 union all
 
 -- 7. Verify percentages sum to ~100 per month
-with pct_sums as (
+select 'percentages_dont_sum_to_100' as check_name,
+       count(*) as issue_count,
+       'Each month should sum to 100%' as expected
+from (
   select encounter_month,
          round(sum(pct_of_month_visits), 1) as total_pct
   from {{ ref('mart_encounter_volume_trend') }}
   group by encounter_month
   having round(sum(pct_of_month_visits), 1) != 100.0
 )
-select 'percentages_dont_sum_to_100' as check_name,
-       count(*) as issue_count,
-       'Each month should sum to 100%' as expected
-from pct_sums
 union all
 
 -- 8. Total records check
