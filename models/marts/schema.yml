@@ -20,3 +20,77 @@ models:
         description: Number of issues found by this check (0 means pass)
       - name: expected
         description: Expected result or summary statistic from the check
+
+  - name: mart_encounter_volume_trend
+    description: |
+      Analytics-ready mart table for encounter volume trend visualization and analysis.
+
+      Purpose:
+      - Primary data source for "Encounter volume trend" analytics metric
+      - Enables stacked bar chart visualization (visits per month, colored by visit type)
+      - Provides trend analysis, forecasting, and capacity planning insights
+      - Tracks operational demand patterns and seasonal variations
+
+      Key Features:
+      - Filtered to COMPLETED encounters only (legitimate operational activity)
+      - Aggregated by month and visit type
+      - Includes wRVU productivity metrics per visit type
+      - Calculates percentage of visits by type within each month
+      - Includes cumulative visits for trend analysis
+      - Ranked by volume within month for easy top-N filtering
+
+      Data Lineage:
+      stg_encounters → int_encounter_volume_by_month_visit_type → mart_encounter_volume_trend
+
+    columns:
+      - name: encounter_month
+        description: First day of the month (YYYY-MM-01 format)
+        data_type: date
+        tests:
+          - not_null
+
+      - name: visit_type
+        description: Type of visit (FOLLOW-UP, NEW PATIENT, PROCEDURE, TELEHEALTH)
+        data_type: varchar
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['FOLLOW-UP', 'NEW PATIENT', 'PROCEDURE', 'TELEHEALTH']
+
+      - name: completed_visits
+        description: Count of COMPLETED encounters for this month/visit_type combination
+        data_type: number
+        tests:
+          - not_null
+
+      - name: total_wrvu
+        description: Sum of wRVU for all completed visits in this group
+        data_type: float
+        tests:
+          - not_null
+
+      - name: avg_wrvu_per_encounter
+        description: Average wRVU per completed encounter in this group
+        data_type: float
+        tests:
+          - not_null
+
+      - name: pct_of_month_visits
+        description: Percentage of this visit type's completed visits out of total visits that month
+        data_type: float
+        tests:
+          - not_null
+
+      - name: cumulative_visits_by_type
+        description: Running total of completed visits for this visit type across months (year-to-date)
+        data_type: number
+        tests:
+          - not_null
+
+      - name: rank_in_month
+        description: Ranking of visit type by volume within the month (1=most common, 4=least common)
+        data_type: number
+        tests:
+          - not_null
+          - accepted_values:
+              values: [1, 2, 3, 4]
