@@ -1,0 +1,71 @@
+version: 2
+
+models:
+  - name: int_encounter_volume_by_month_visit_type
+    description: |
+      Intermediate table aggregating encounter volume by month and visit type.
+
+      Purpose:
+      - Support "Encounter volume trend" analytics metric
+      - Enable stacked bar chart visualization (visits per month, colored by visit type)
+      - Track operational demand patterns over time
+      - Identify seasonal trends and capacity planning needs
+
+      Key Features:
+      - Aggregates encounters by calendar month
+      - Groups by visit type (FOLLOW-UP, NEW PATIENT, PROCEDURE, TELEHEALTH)
+      - Includes status dimension (COMPLETED, CANCELLED, NO-SHOW) for filtering
+      - Calculates wRVU statistics per visit type per month
+      - Includes cumulative count for trend analysis
+
+    columns:
+      - name: encounter_month
+        description: First day of the month (YYYY-MM-01 format)
+        data_type: date
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: date
+
+      - name: visit_type
+        description: Type of visit (FOLLOW-UP, NEW PATIENT, PROCEDURE, TELEHEALTH)
+        data_type: varchar
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['FOLLOW-UP', 'NEW PATIENT', 'PROCEDURE', 'TELEHEALTH']
+
+      - name: encounter_status
+        description: Status of encounter (COMPLETED, CANCELLED, NO-SHOW)
+        data_type: varchar
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['COMPLETED', 'CANCELLED', 'NO-SHOW']
+
+      - name: encounter_count
+        description: Number of encounters for this month/visit_type/status combination
+        data_type: number
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_set:
+              value_set: [0]
+              tolerance_percent: 100
+
+      - name: total_wrvu
+        description: Sum of wRVU for encounters in this group
+        data_type: float
+        tests:
+          - not_null
+
+      - name: avg_wrvu_per_encounter
+        description: Average wRVU per encounter in this group
+        data_type: float
+        tests:
+          - not_null
+
+      - name: cumulative_completed_count
+        description: Running total of COMPLETED encounters for this visit type across months
+        data_type: number
+        tests:
+          - not_null
