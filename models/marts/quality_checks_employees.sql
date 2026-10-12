@@ -93,7 +93,7 @@ select 'npi_format_check' as check_name,
        count(*) as issue_count,
        'NPI should be 10 digits (if populated)' as expected
 from {{ ref('stg_employees') }}
-where npi is not null and (length(trim(npi)) != 10 or npi ~ '[^0-9]')
+where npi is not null and (length(trim(npi)) != 10 or not regexp_like(npi, '^[0-9]+$'))
 union all
 
 -- 12. Check job_title for nulls and trimming
