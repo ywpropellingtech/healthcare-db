@@ -37,12 +37,12 @@ provider_npi_lookup as (
   from (
     select
       trim(PROVIDER_NAME) as provider_name,
-      trim(PROVIDER_NPI) as known_npi,
+      trim(to_char(try_to_number(replace(trim(translate(PROVIDER_NPI, ' .', '')), '.0', '')))) as known_npi,
       count(*) as npi_frequency,
       row_number() over (partition by trim(PROVIDER_NAME) order by count(*) desc) as rn
     from {{ source('raw_epic', 'EPC_ENCOUNTERS') }}
     where PROVIDER_NPI is not null
-    group by trim(PROVIDER_NAME), trim(PROVIDER_NPI)
+    group by trim(PROVIDER_NAME), trim(to_char(try_to_number(replace(trim(translate(PROVIDER_NPI, ' .', '')), '.0', ''))))
   )
   where rn = 1
 ),
@@ -52,7 +52,14 @@ cleaned_data as (
     sd.ENCOUNTER_ID as encounter_id,
     sd.PATIENT_MRN as patient_id,
     trim(sd.PROVIDER_NAME) as provider_name,
-    coalesce(trim(sd.PROVIDER_NPI), pnl.known_npi) as provider_npi,
+    coalesce(
+      case
+        when trim(sd.PROVIDER_NPI) is not null
+        then trim(to_char(try_to_number(replace(trim(translate(sd.PROVIDER_NPI, ' .', '')), '.0', ''))))
+        else null
+      end,
+      pnl.known_npi
+    ) as provider_npi,
     sd.ENCOUNTER_DATE as encounter_date,
     trim(sd.DEPARTMENT) as department,
     upper(trim(sd.VISIT_TYPE)) as visit_type,
