@@ -35,17 +35,17 @@ with source_data as (
 cleaned_data as (
   select
     EMPLOYEE_ID as employee_id,
-    trim(FULL_NAME) as full_name,
+    {{ standardize_text('FULL_NAME') }} as full_name,
     NPI as npi,
-    trim(JOB_TITLE) as job_title,
-    upper(trim(WORKER_TYPE)) as worker_type,
-    trim(DEPARTMENT) as department,
-    trim(COST_CENTER) as cost_center,
+    {{ standardize_text('JOB_TITLE') }} as job_title,
+    {{ standardize_text('WORKER_TYPE', 'upper') }} as worker_type,
+    {{ standardize_text('DEPARTMENT') }} as department,
+    {{ standardize_text('COST_CENTER') }} as cost_center,
     FTE as fte,
     try_to_number(replace(replace(ANNUAL_SALARY, '$', ''), ',', '')) as annual_salary,
     HIRE_DATE as hire_date,
     TERMINATION_DATE as termination_date,
-    trim(LOCATION) as location,
+    {{ standardize_text('LOCATION') }} as location,
     LAST_UPDATED as last_updated,
     current_timestamp() as dbt_loaded_at,
     row_number() over (partition by EMPLOYEE_ID order by LAST_UPDATED desc) as recency_rank

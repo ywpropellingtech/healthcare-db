@@ -36,13 +36,13 @@ provider_npi_lookup as (
     known_npi
   from (
     select
-      trim(PROVIDER_NAME) as provider_name,
+      {{ standardize_text('PROVIDER_NAME') }} as provider_name,
       trim(to_char(try_to_number(replace(trim(translate(PROVIDER_NPI, ' .', '')), '.0', '')))) as known_npi,
       count(*) as npi_frequency,
-      row_number() over (partition by trim(PROVIDER_NAME) order by count(*) desc) as rn
+      row_number() over (partition by {{ standardize_text('PROVIDER_NAME') }} order by count(*) desc) as rn
     from {{ source('raw_epic', 'EPC_ENCOUNTERS') }}
     where PROVIDER_NPI is not null
-    group by trim(PROVIDER_NAME), trim(to_char(try_to_number(replace(trim(translate(PROVIDER_NPI, ' .', '')), '.0', ''))))
+    group by {{ standardize_text('PROVIDER_NAME') }}, trim(to_char(try_to_number(replace(trim(translate(PROVIDER_NPI, ' .', '')), '.0', ''))))
   )
   where rn = 1
 ),
@@ -51,7 +51,7 @@ cleaned_data as (
   select
     sd.ENCOUNTER_ID as encounter_id,
     sd.PATIENT_MRN as patient_id,
-    trim(sd.PROVIDER_NAME) as provider_name,
+    {{ standardize_text('sd.PROVIDER_NAME') }} as provider_name,
     coalesce(
       case
         when trim(sd.PROVIDER_NPI) is not null
@@ -61,9 +61,9 @@ cleaned_data as (
       pnl.known_npi
     ) as provider_npi,
     sd.ENCOUNTER_DATE as encounter_date,
-    trim(sd.DEPARTMENT) as department,
-    upper(trim(sd.VISIT_TYPE)) as visit_type,
-    upper(trim(sd.ENCOUNTER_STATUS)) as encounter_status,
+    {{ standardize_text('sd.DEPARTMENT') }} as department,
+    {{ standardize_text('sd.VISIT_TYPE', 'upper') }} as visit_type,
+    {{ standardize_text('sd.ENCOUNTER_STATUS', 'upper') }} as encounter_status,
     case
       when sd.WRVU is null or sd.WRVU < 0 then 0
       else sd.WRVU
@@ -75,7 +75,7 @@ cleaned_data as (
     current_timestamp() as dbt_loaded_at,
     row_number() over (partition by sd.ENCOUNTER_ID, sd.PATIENT_MRN, sd.ENCOUNTER_DATE order by sd.ENCOUNTER_ID) as dedup_rank
   from source_data sd
-  left join provider_npi_lookup pnl on trim(sd.PROVIDER_NAME) = pnl.provider_name
+  left join provider_npi_lookup pnl on {{ standardize_text('sd.PROVIDER_NAME') }} = pnl.provider_name
 ),
 
 -- Deduplicate identical encounter records (loaded twice)
