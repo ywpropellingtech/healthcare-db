@@ -31,7 +31,8 @@ models:
         tests:
           - not_null
           - accepted_values:
-              values: ['FOLLOW-UP', 'NEW PATIENT', 'PROCEDURE', 'TELEHEALTH']
+              arguments:
+                values: ['FOLLOW-UP', 'NEW PATIENT', 'PROCEDURE', 'TELEHEALTH']
 
       - name: encounter_status
         description: Status of encounter (COMPLETED, CANCELLED, NO-SHOW)
@@ -39,7 +40,8 @@ models:
         tests:
           - not_null
           - accepted_values:
-              values: ['COMPLETED', 'CANCELLED', 'NO-SHOW']
+              arguments:
+                values: ['COMPLETED', 'CANCELLED', 'NO-SHOW']
 
       - name: encounter_count
         description: Number of encounters for this month/visit_type/status combination
@@ -179,4 +181,5 @@ models:
         tests:
           - not_null
           - accepted_values:
-              values: ['Above Average', 'Below Average', 'At Average']
+              arguments:
+                values: ['Above Average', 'Below Average', 'At Average']

@@ -55,7 +55,8 @@ models:
         tests:
           - not_null
           - accepted_values:
-              values: ['FOLLOW-UP', 'NEW PATIENT', 'PROCEDURE', 'TELEHEALTH']
+              arguments:
+                values: ['FOLLOW-UP', 'NEW PATIENT', 'PROCEDURE', 'TELEHEALTH']
 
       - name: completed_visits
         description: Count of COMPLETED encounters for this month/visit_type combination
@@ -93,7 +94,8 @@ models:
         tests:
           - not_null
           - accepted_values:
-              values: [1, 2, 3, 4]
+              arguments:
+                values: [1, 2, 3, 4]
 
   - name: mart_cost_per_wrvu
     description: |
@@ -214,7 +216,8 @@ models:
         tests:
           - not_null
           - accepted_values:
-              values: ['Above Average', 'Below Average', 'At Average']
+              arguments:
+                values: ['Above Average', 'Below Average', 'At Average']
 
       - name: cost_per_wrvu_quartile
         description: Quartile ranking by cost per wRVU within service line (1=most efficient, 4=least)
@@ -222,7 +225,8 @@ models:
         tests:
           - not_null
           - accepted_values:
-              values: [1, 2, 3, 4]
+              arguments:
+                values: [1, 2, 3, 4]
 
       - name: wrvu_per_fte_quartile
         description: Quartile ranking by productivity within service line (1=least productive, 4=most)
@@ -230,7 +234,8 @@ models:
         tests:
           - not_null
           - accepted_values:
-              values: [1, 2, 3, 4]
+              arguments:
+                values: [1, 2, 3, 4]
 
       - name: cost_efficiency_rank
         description: Ranking of employee by cost per wRVU within service line (1=most efficient)
